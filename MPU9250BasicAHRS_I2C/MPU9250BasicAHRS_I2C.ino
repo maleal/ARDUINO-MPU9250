@@ -482,8 +482,7 @@ void loop()
       myIMU.pitch *= RAD_TO_DEG;
       myIMU.yaw   *= RAD_TO_DEG;
 
-      // Declination of SparkFun Electronics (40Ãƒâ€šÃ‚Â°05'26.6"N 105Ãƒâ€šÃ‚Â°11'05.9"W) is
-      // 	8Ãƒâ€šÃ‚Â° 30' E  Ãƒâ€šÃ‚Â± 0Ãƒâ€šÃ‚Â° 21' (or 8.5Ãƒâ€šÃ‚Â°) on 2016-07-19
+      // Declination of SparkFun Electronics on 2016-07-19
       // - http://www.ngdc.noaa.gov/geomag-web/#declination
       myIMU.yaw  -= 8.5;
       myIMU.roll *= RAD_TO_DEG;
@@ -578,19 +577,6 @@ void loop()
               //Serial.println( MsgToOpGL.Msg.strMsg );
               Serial.print(MsgToOpGL.Msg.strMsg);
           //Serial.println(MsgToOpGL.iLen);
-          
-          /*
-          strcat(MsgToOpGL.Msg.strMsg, zbuffer);
-          Serial.println( MsgToOpGL.Msg.strMsg );
-          
-          
-          strcpy(MsgToOpGL.Msg.strLen, zbuffer); 
-          
-          while (!Serial.find("ready"));
-
-          
-          Serial.println(zbuffer);
-           */
           
 #endif//SAMPLES_TO_OPENGL        
           
