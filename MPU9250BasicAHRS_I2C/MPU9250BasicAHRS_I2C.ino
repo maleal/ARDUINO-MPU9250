@@ -25,27 +25,12 @@
 */
 
 // Set to false for basic data read
-#define     SERIAL_DEBUG        true  // Set to false to get Serial output for deb
 #define     SAMPLES_TO_OPENGL   true
+#define     NO_SERIAL_DEBUG        true  // Set to true to get Serial output for deb
 
-
-#include "quaternionFilters.h"
 #include "MPU9250.h"
+#include "quaternionFilters.h"
 
-
-
-#ifdef  LCD
-#include <Adafruit_GFX.h>
-#include <Adafruit_PCD8544.h>
-
-// Using NOKIA 5110 monochrome 84 x 48 pixel display
-// pin 9 - Serial clock out (SCLK)
-// pin 8 - Serial data out (DIN)
-// pin 7 - Data/Command select (D/C)
-// pin 5 - LCD chip select (CS)
-// pin 6 - LCD reset (RST)
-//Adafruit_PCD8544 display = Adafruit_PCD8544(9, 8, 7, 5, 6);
-#endif // LCD
 
 
 int intPin = 12;  // These can be changed, 2 and 3 are the Arduinos ext int pins
@@ -72,37 +57,36 @@ int     fcount=0;
 
 void setup()
 {
-  Wire.begin();
-  // TWBR = 12;  // 400 kbit/sec I2C speed
-  Serial.begin(115200);
+    Wire.begin();
+    // TWBR = 12;  // 400 kbit/sec I2C speed
+    Serial.begin(115200);
+  
+    // Set up the interrupt pin, its set as active high, push-pull
+    pinMode(intPin, INPUT);
+    digitalWrite(intPin, LOW);
+    pinMode(myLed, OUTPUT);
+    digitalWrite(myLed, HIGH);
 
-  // Set up the interrupt pin, its set as active high, push-pull
-  pinMode(intPin, INPUT);
-  digitalWrite(intPin, LOW);
-  pinMode(myLed, OUTPUT);
-  digitalWrite(myLed, HIGH);
 
-#ifdef LCD
-#endif // LCD
+    // Read the WHO_AM_I register, this is a good test of communication
+    byte c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
 
-  // Read the WHO_AM_I register, this is a good test of communication
-  byte c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
+#ifndef NO_SERIAL_DEBUG
+{
+    Serial.print(F("MPU9250 I AM 0x"));
+    Serial.print(c, HEX);
+    Serial.print(F(" I should be 0x"));
+    Serial.println(0x71, HEX);
+}
+#endif //_NO_SERIAL_DEBUG
 
-#ifndef SERIAL_DEBUG
-  Serial.print(F("MPU9250 I AM 0x"));
-  Serial.print(c, HEX);
-  Serial.print(F(" I should be 0x"));
-  Serial.println(0x71, HEX);
-#endif //_SERIAL_DEBUG
-
-#ifdef LCD
-#endif // LCD
 
   if (c == 0x71) // WHO_AM_I should always be 0x71
   {
       // Start by performing self test and reporting values
       myIMU.MPU9250SelfTest(myIMU.selfTest);
-#ifndef SERIAL_DEBUG
+#ifndef NO_SERIAL_DEBUG
+{
       Serial.println(F("MPU9250 is online..."));
       Serial.print(F("x-axis self test: acceleration trim within : "));
       Serial.print(myIMU.selfTest[0], 1); Serial.println("% of factory value");
@@ -116,13 +100,12 @@ void setup()
       Serial.print(myIMU.selfTest[4], 1); Serial.println("% of factory value");
       Serial.print(F("z-axis self test: gyration trim within : "));
       Serial.print(myIMU.selfTest[5], 1); Serial.println("% of factory value");
-#endif //_SERIAL_DEBUG
+}
+#endif //NO_SERIAL_DEBUG
 
       // Calibrate gyro and accelerometers, load biases in bias registers
       myIMU.calibrateMPU9250(myIMU.gyroBias, myIMU.accelBias);
 
-#ifdef LCD
-#endif // LCD
 
     myIMU.initMPU9250();
 
@@ -131,18 +114,18 @@ void setup()
     // temperature
     // Read the WHO_AM_I register of the magnetometer, this is a good test of
     // communication
-#ifndef SERIAL_DEBUG
+
+#ifndef NO_SERIAL_DEBUG
+{
     Serial.println("MPU9250 initialized for active data mode....");
     Serial.print("AK8963 ");
     Serial.print("I AM 0x");
     Serial.print(d, HEX);
     Serial.print(" I should be 0x");
     Serial.println(0x48, HEX);
-#endif //_SERIAL_DEBUG
+}
+#endif//NO_SERIAL_DEBUG
 
-
-#ifdef LCD
-#endif // LCD
 
     if (d != 0x48)
     {
@@ -156,8 +139,8 @@ void setup()
     myIMU.initAK8963(myIMU.factoryMagCalibration);
     
 
-    #ifndef SERIAL_DEBUG //if (SERIAL_DEBUG)
-    {
+#ifndef NO_SERIAL_DEBUG
+{
         // Initialize device for active mode read of magnetometer
         Serial.println("AK8963 initialized for active data mode....");
         //  Serial.println("Calibration values: ");
@@ -167,11 +150,9 @@ void setup()
         Serial.println(myIMU.factoryMagCalibration[1], 2);
         Serial.print("Z-Axis factory sensitivity adjustment value ");
         Serial.println(myIMU.factoryMagCalibration[2], 2);
-    }
-    #endif//_SERIAL_DEBUG
+}
+#endif//NO_SERIAL_DEBUG
 
-#ifdef LCD
-#endif // LCD
 
     // Get sensor resolutions, only need to do this once
     myIMU.getAres();
@@ -184,8 +165,8 @@ void setup()
     
     delay(2000); // Add delay to see results before serial spew of data
 
-#ifndef SERIAL_DEBUG //if (SERIAL_DEBUG)
-    {
+#ifndef NO_SERIAL_DEBUG
+{
         Serial.println("AK8963 mag biases (mG)");
         Serial.println(myIMU.magBias[0]);
         Serial.println(myIMU.magBias[1]);
@@ -202,11 +183,8 @@ void setup()
         Serial.println(myIMU.factoryMagCalibration[1], 2);
         Serial.print("Z-Axis sensitivity adjustment value ");
         Serial.println(myIMU.factoryMagCalibration[2], 2);
-    }
-#endif//_SERIAL_DEBUG
-
-#ifdef LCD
-#endif // LCD
+}
+#endif//NO_SERIAL_DEBUG
 
     //while (!Serial.find("ready"));
     //Serial.print("ready");
@@ -223,6 +201,8 @@ void setup()
       abort();
   }
 }
+
+
 
 void loop()
 {
@@ -279,11 +259,11 @@ void loop()
       // Serial print and/or display at 0.5 s rate independent of data rates
       myIMU.dspDelt_t = millis() - myIMU.count;
 
-      // update LCD once per half-second independent of read rate
+      //
       if (myIMU.dspDelt_t > 500)
       {
-#ifndef SERIAL_DEBUG //      if (SERIAL_DEBUG)
-          
+
+#ifndef NO_SERIAL_DEBUG
           Serial.print("ax = ");  Serial.print((int)1000 * myIMU.ax);
           Serial.print(" ay = "); Serial.print((int)1000 * myIMU.ay);
           Serial.print(" az = "); Serial.print((int)1000 * myIMU.az);
@@ -311,8 +291,8 @@ void loop()
           // Print temperature in degrees Centigrade
           Serial.print("Temperature is ");  Serial.print(myIMU.temperature, 1);
           Serial.println(" degrees C");
-          
-#endif//_SERIAL_DEBUG
+#endif//NO_SERIAL_DEBUG
+
           // Define output variables from updated quaternion---these are Tait-Bryan
           // angles, commonly used in aircraft orientation. In this coordinate system,
           // the positive z-axis is down toward Earth. Yaw is the angle between Sensor
@@ -342,13 +322,12 @@ void loop()
           myIMU.pitch *= RAD_TO_DEG;
           myIMU.yaw   *= RAD_TO_DEG;
     
-          // Declination of SparkFun Electronics (40Ãƒâ€šÃ‚Â°05'26.6"N 105Ãƒâ€šÃ‚Â°11'05.9"W) is
-          // 	8Ãƒâ€šÃ‚Â° 30' E  Ãƒâ€šÃ‚Â± 0Ãƒâ€šÃ‚Â° 21' (or 8.5Ãƒâ€šÃ‚Â°) on 2016-07-19
+          // Declination of Bs As 2017
           // - http://www.ngdc.noaa.gov/geomag-web/#declination
           myIMU.yaw  -= 8.36; //Buenos aires 2017
           myIMU.roll *= RAD_TO_DEG;
 
-#ifndef SERIAL_DEBUG //if (SERIAL_DEBUG)     
+#ifndef NO_SERIAL_DEBUG
           Serial.print("Yaw, Pitch, Roll: ");
           Serial.print(myIMU.yaw, 2);
           Serial.print(", ");
@@ -359,7 +338,7 @@ void loop()
           Serial.print("rate = ");
           Serial.print((float)myIMU.sumCount / myIMU.sum, 2);
           Serial.println(" Hz");
-#endif//_SERIAL_DEBUG
+#endif//NO_SERIAL_DEBUG
 
 #ifdef LCD
       // With these settings the filter is updating at a ~145 Hz rate using the
@@ -387,11 +366,9 @@ void loop()
 
      
           
-#ifdef SAMPLES_TO_OPENGL//_SERIAL_DEBUG  //Send Heading to OpenGl App !!!!!!!
-          //043STx|yaw= 80.56|pitch= 18.43|roll= 10.29|End
+#ifdef SAMPLES_TO_OPENGL  //Send Heading to OpenGl App !!!!!!!
+              //043STx|yaw= 80.56|pitch= 18.43|roll= 10.29|End
 
-          
-          
               dtostrf(myIMU.yaw,    7, 2, MsgToOpGL.zYaw);
               dtostrf(myIMU.pitch,  7, 2, MsgToOpGL.zPitch);
               dtostrf(myIMU.roll,   7, 2, MsgToOpGL.zPitch);
@@ -407,14 +384,11 @@ void loop()
               
               //Serial.println( MsgToOpGL.Msg.strMsg );
               Serial.print(MsgToOpGL.Msg.strMsg);
-              //Serial.println(MsgToOpGL.iLen);
-          
-          /*
-          */
-          
+              //Serial.println(MsgToOpGL.iLen);         
 #endif//SAMPLES_TO_OPENGL        
 
 }
+
 
 
 

@@ -496,10 +496,12 @@ void MPU9250::MPU9250SelfTest(float * destination)
   // Get average current values of gyro and acclerometer
   for (int ii = 0; ii < 200; ii++)
   {
-#ifndef SERIAL_DEBUG
+
+#ifndef NO_SERIAL_DEBUG
     Serial.print("BHW::ii = ");
     Serial.println(ii);
 #endif
+
     // Read the six raw data registers into data array
     readBytes(MPU9250_ADDRESS, ACCEL_XOUT_H, 6, &rawData[0]);
     // Turn the MSB and LSB into a signed 16-bit value
@@ -615,10 +617,9 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
   // Make sure resolution has been calculated
   getMres();
 
-#ifndef SERIAL_DEBUG
+#ifndef NO_SERIAL_DEBUG
   Serial.println(F("Mag Calibration: Wave device in a figure 8 until done!"));
-  Serial.println(
-      F("  4 seconds to get ready followed by 15 seconds of sampling)"));
+  Serial.println(F("  4 seconds to get ready followed by 15 seconds of sampling)"));
 #endif
   delay(4000);
 
@@ -691,9 +692,10 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
   scale_dest[0] = avg_rad / ((float)mag_scale[0]);
   scale_dest[1] = avg_rad / ((float)mag_scale[1]);
   scale_dest[2] = avg_rad / ((float)mag_scale[2]);
-#ifndef SERIAL_DEBUG
+
+#ifndef NO_SERIAL_DEBUG
   Serial.println(F("Mag Calibration done!"));
-#endif//_SERIAL_DEBUG
+#endif//_NO_SERIAL_DEBUG
 }
 
 // Wire.h read and write protocols
@@ -722,7 +724,8 @@ uint8_t MPU9250::writeByteSPI(uint8_t registerAddress, uint8_t writeData)
 
   deselect();
   SPI.endTransaction();
-#ifndef SERIAL_DEBUG
+
+#ifndef NO_SERIAL_DEBUG
   Serial.print("MPU9250::writeByteSPI slave returned: 0x");
   Serial.println(returnVal, HEX);
 #endif
@@ -827,7 +830,7 @@ uint8_t MPU9250::readBytesSPI(uint8_t registerAddress, uint8_t count,
   for (i = 0; i < count; i++)
   {
     dest[i] = SPI.transfer(0x00);
-#ifndef SERIAL_DEBUG
+#ifndef NO_SERIAL_DEBUG
     Serial.print("readBytesSPI::Read byte: 0x");
     Serial.println(dest[i], HEX);
 #endif
@@ -841,7 +844,7 @@ uint8_t MPU9250::readBytesSPI(uint8_t registerAddress, uint8_t count,
   return i; // Return number of bytes written
 
   /*
-#ifdef SERIAL_DEBUG
+#ifdef NO_SERIAL_DEBUG
   Serial.print("MPU9250::writeByteSPI slave returned: 0x");
   Serial.println(returnVal, HEX);
 #endif
@@ -923,10 +926,12 @@ bool MPU9250::magInit()
 
   // TODO: Remove this code
   uint8_t ret = ak8963WhoAmI_SPI();
-#ifndef SERIAL_DEBUG
+
+#ifndef NO_SERIAL_DEBUG
   Serial.print("MPU9250::magInit to return ");
   Serial.println((ret == 0x48) ? "true" : "false");
 #endif
+
   return ret == 0x48;
 }
 
@@ -953,7 +958,8 @@ uint8_t MPU9250::ak8963WhoAmI_SPI()
   oldSlaveAddress  = readByteSPI(I2C_SLV0_ADDR);
   oldSlaveRegister = readByteSPI(I2C_SLV0_REG);
   oldSlaveConfig   = readByteSPI(I2C_SLV0_CTRL);
-#ifndef SERIAL_DEBUG
+
+#ifndef NO_SERIAL_DEBUG
   Serial.print("Old slave address: 0x");
   Serial.println(oldSlaveAddress, HEX);
   Serial.print("Old slave register: 0x");
@@ -979,6 +985,7 @@ uint8_t MPU9250::ak8963WhoAmI_SPI()
 
   return response;
 }
+
 
 
 

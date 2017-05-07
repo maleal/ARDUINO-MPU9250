@@ -11,7 +11,7 @@
 #include <SPI.h>
 #include <Wire.h>
 
-#define     SERIAL_DEBUG  true  // Set to true to get Serial output for deb
+#define     NO_SERIAL_DEBUG
 
 // See also MPU-9250 Register Map and Descriptions, Revision 4.0,
 // RM-MPU-9250A-00, Rev. 1.4, 9/9/2013 for registers not listed in above
@@ -293,6 +293,7 @@ public:
 };  // class MPU9250
 
 #endif // _MPU9250_H_
+
 
 
 
