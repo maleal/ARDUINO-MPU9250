@@ -47,7 +47,7 @@ typedef union {
 
 struct heading {
     int iLen;
-    char zYaw[10]; char zPitch[10]; char zRoll[10];
+    char zYaw[10]; char zPitch[10]; char zRoll[10]; char zDelT[10];
     uTrama Msg;
 };
 
@@ -206,186 +206,188 @@ void setup()
 
 void loop()
 {
-  // If intPin goes high, all data registers have new data
-  // On interrupt, check if data ready interrupt
-  if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
-  {
-        myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
-    
-        // Now we'll calculate the accleration value into actual g's
-        // This depends on scale being set
-        myIMU.ax = (float)myIMU.accelCount[0] * myIMU.aRes; // - myIMU.accelBias[0];
-        myIMU.ay = (float)myIMU.accelCount[1] * myIMU.aRes; // - myIMU.accelBias[1];
-        myIMU.az = (float)myIMU.accelCount[2] * myIMU.aRes; // - myIMU.accelBias[2];
-    
-        myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
-    
-        // Calculate the gyro value into actual degrees per second
-        // This depends on scale being set
-        myIMU.gx = (float)myIMU.gyroCount[0] * myIMU.gRes;
-        myIMU.gy = (float)myIMU.gyroCount[1] * myIMU.gRes;
-        myIMU.gz = (float)myIMU.gyroCount[2] * myIMU.gRes;
-    
-        myIMU.readMagData(myIMU.magCount);  // Read the x/y/z adc values
-    
-        // Calculate the magnetometer values in milliGauss
-        // Include factory calibration per data sheet and user environmental
-        // corrections
-        // Get actual magnetometer value, this depends on scale being set
-        myIMU.mx = (float)myIMU.magCount[0] * myIMU.mRes
-                   * myIMU.factoryMagCalibration[0] - myIMU.magBias[0];
-        myIMU.my = (float)myIMU.magCount[1] * myIMU.mRes
-                   * myIMU.factoryMagCalibration[1] - myIMU.magBias[1];
-        myIMU.mz = (float)myIMU.magCount[2] * myIMU.mRes
-                   * myIMU.factoryMagCalibration[2] - myIMU.magBias[2];
-  } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
-
-      // Must be called before updating quaternions!
-      myIMU.updateTime();
-    
-      // Sensors x (y)-axis of the accelerometer is aligned with the y (x)-axis of
-      // the magnetometer; the magnetometer z-axis (+ down) is opposite to z-axis
-      // (+ up) of accelerometer and gyro! We have to make some allowance for this
-      // orientationmismatch in feeding the output to the quaternion filter. For the
-      // MPU-9250, we have chosen a magnetic rotation that keeps the sensor forward
-      // along the x-axis just like in the LSM9DS0 sensor. This rotation can be
-      // modified to allow any convenient orientation convention. This is ok by
-      // aircraft orientation standards! Pass gyro rate as rad/s
-      MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx * DEG_TO_RAD,
-                             myIMU.gy * DEG_TO_RAD, myIMU.gz * DEG_TO_RAD, myIMU.my,
-                             myIMU.mx, myIMU.mz, myIMU.deltat);
-
+    // If intPin goes high, all data registers have new data
+    // On interrupt, check if data ready interrupt
+    if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
+    {
+          myIMU.readAccelData(myIMU.accelCount);  // Read the x/y/z adc values
+      
+          // Now we'll calculate the accleration value into actual g's
+          // This depends on scale being set
+          myIMU.ax = (float)myIMU.accelCount[0] * myIMU.aRes; // - myIMU.accelBias[0];
+          myIMU.ay = (float)myIMU.accelCount[1] * myIMU.aRes; // - myIMU.accelBias[1];
+          myIMU.az = (float)myIMU.accelCount[2] * myIMU.aRes; // - myIMU.accelBias[2];
+      
+          myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
+      
+          // Calculate the gyro value into actual degrees per second
+          // This depends on scale being set
+          myIMU.gx = (float)myIMU.gyroCount[0] * myIMU.gRes;
+          myIMU.gy = (float)myIMU.gyroCount[1] * myIMU.gRes;
+          myIMU.gz = (float)myIMU.gyroCount[2] * myIMU.gRes;
+      
+          myIMU.readMagData(myIMU.magCount);  // Read the x/y/z adc values
+      
+          // Calculate the magnetometer values in milliGauss
+          // Include factory calibration per data sheet and user environmental
+          // corrections
+          // Get actual magnetometer value, this depends on scale being set
+          myIMU.mx = (float)myIMU.magCount[0] * myIMU.mRes
+                     * myIMU.factoryMagCalibration[0] - myIMU.magBias[0];
+          myIMU.my = (float)myIMU.magCount[1] * myIMU.mRes
+                     * myIMU.factoryMagCalibration[1] - myIMU.magBias[1];
+          myIMU.mz = (float)myIMU.magCount[2] * myIMU.mRes
+                     * myIMU.factoryMagCalibration[2] - myIMU.magBias[2];
+    } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
   
-      // Serial print and/or display at 0.5 s rate independent of data rates
-      myIMU.dspDelt_t = millis() - myIMU.count;
-
-      //
-      if (myIMU.dspDelt_t > 500)
-      {
-
-#ifndef NO_SERIAL_DEBUG
-          Serial.print("ax = ");  Serial.print((int)1000 * myIMU.ax);
-          Serial.print(" ay = "); Serial.print((int)1000 * myIMU.ay);
-          Serial.print(" az = "); Serial.print((int)1000 * myIMU.az);
-          Serial.println(" mG-force");
+        // Must be called before updating quaternions!
+        myIMU.updateTime();
+      
+        // Sensors x (y)-axis of the accelerometer is aligned with the y (x)-axis of
+        // the magnetometer; the magnetometer z-axis (+ down) is opposite to z-axis
+        // (+ up) of accelerometer and gyro! We have to make some allowance for this
+        // orientationmismatch in feeding the output to the quaternion filter. For the
+        // MPU-9250, we have chosen a magnetic rotation that keeps the sensor forward
+        // along the x-axis just like in the LSM9DS0 sensor. This rotation can be
+        // modified to allow any convenient orientation convention. This is ok by
+        // aircraft orientation standards! Pass gyro rate as rad/s
+        MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx * DEG_TO_RAD,
+                               myIMU.gy * DEG_TO_RAD, myIMU.gz * DEG_TO_RAD, myIMU.my,
+                               myIMU.mx, myIMU.mz, myIMU.deltat);
   
-          Serial.print("gx = ");  Serial.print(myIMU.gx, 2);
-          Serial.print(" gy = "); Serial.print(myIMU.gy, 2);
-          Serial.print(" gz = "); Serial.print(myIMU.gz, 2);
-          Serial.println(" deg/s");
-  
-          Serial.print("mx = ");  Serial.print((int)myIMU.mx);
-          Serial.print(" my = "); Serial.print((int)myIMU.my);
-          Serial.print(" mz = "); Serial.print((int)myIMU.mz);
-          Serial.println(" mGauss");
-  
-          Serial.print("q0 = ");  Serial.print(*getQ());
-          Serial.print(" qx = "); Serial.print(*(getQ() + 1));
-          Serial.print(" qy = "); Serial.print(*(getQ() + 2));
-          Serial.print(" qz = "); Serial.println(*(getQ() + 3));
-  
-          myIMU.tempCount = myIMU.readTempData();  // Read the adc values
-          
-          // Temperature in degrees Centigrade
-          myIMU.temperature = ((float) myIMU.tempCount) / 333.87 + 21.0;
-          // Print temperature in degrees Centigrade
-          Serial.print("Temperature is ");  Serial.print(myIMU.temperature, 1);
-          Serial.println(" degrees C");
-#endif//NO_SERIAL_DEBUG
-
-          // Define output variables from updated quaternion---these are Tait-Bryan
-          // angles, commonly used in aircraft orientation. In this coordinate system,
-          // the positive z-axis is down toward Earth. Yaw is the angle between Sensor
-          // x-axis and Earth magnetic North (or true North if corrected for local
-          // declination, looking down on the sensor positive yaw is counterclockwise.
-          // Pitch is angle between sensor x-axis and Earth ground plane, toward the
-          // Earth is positive, up toward the sky is negative. Roll is angle between
-          // sensor y-axis and Earth ground plane, y-axis up is positive roll. These
-          // arise from the definition of the homogeneous rotation matrix constructed
-          // from quaternions. Tait-Bryan angles as well as Euler angles are
-          // non-commutative; that is, the get the correct orientation the rotations
-          // must be applied in the correct order which for this configuration is yaw,
-          // pitch, and then roll.
-          // For more see
-          // http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-          // which has additional links.
-          myIMU.yaw   = atan2(2.0f * (*(getQ() + 1) * *(getQ() + 2) + *getQ()
-                                      * *(getQ() + 3)), *getQ() * *getQ() + * (getQ() + 1)
-                              * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) - * (getQ() + 3)
-                              * *(getQ() + 3));
-          myIMU.pitch = -asin(2.0f * (*(getQ() + 1) * *(getQ() + 3) - *getQ()
-                                      * *(getQ() + 2)));
-          myIMU.roll  = atan2(2.0f * (*getQ() * *(getQ() + 1) + * (getQ() + 2)
-                                      * *(getQ() + 3)), *getQ() * *getQ() - * (getQ() + 1)
-                              * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) + * (getQ() + 3)
-                              * *(getQ() + 3));
-          myIMU.pitch *= RAD_TO_DEG;
-          myIMU.yaw   *= RAD_TO_DEG;
     
-          // Declination of Bs As 2017
-          // - http://www.ngdc.noaa.gov/geomag-web/#declination
-          myIMU.yaw  -= 8.36; //Buenos aires 2017
-          myIMU.roll *= RAD_TO_DEG;
-
-#ifndef NO_SERIAL_DEBUG
-          Serial.print("Yaw, Pitch, Roll: ");
-          Serial.print(myIMU.yaw, 2);
-          Serial.print(", ");
-          Serial.print(myIMU.pitch, 2);
-          Serial.print(", ");
-          Serial.println(myIMU.roll, 2);
+        // Serial print and/or display at 0.5 s rate independent of data rates
+        myIMU.dspDelt_t = millis() - myIMU.count;
   
-          Serial.print("rate = ");
-          Serial.print((float)myIMU.sumCount / myIMU.sum, 2);
-          Serial.println(" Hz");
-#endif//NO_SERIAL_DEBUG
-
-#ifdef LCD
-      // With these settings the filter is updating at a ~145 Hz rate using the
-      // Madgwick scheme and >200 Hz using the Mahony scheme even though the
-      // display refreshes at only 2 Hz. The filter update rate is determined
-      // mostly by the mathematical steps in the respective algorithms, the
-      // processor speed (8 MHz for the 3.3V Pro Mini), and the magnetometer ODR:
-      // an ODR of 10 Hz for the magnetometer produce the above rates, maximum
-      // magnetometer ODR of 100 Hz produces filter update rates of 36 - 145 and
-      // ~38 Hz for the Madgwick and Mahony schemes, respectively. This is
-      // presumably because the magnetometer read takes longer than the gyro or
-      // accelerometer reads. This filter update rate should be fast enough to
-      // maintain accurate platform orientation for stabilization control of a
-      // fast-moving robot or quadcopter. Compare to the update rate of 200 Hz
-      // produced by the on-board Digital Motion Processor of Invensense's MPU6050
-      // 6 DoF and MPU9150 9DoF sensors. The 3.3 V 8 MHz Pro Mini is doing pretty
-      // well!
-#endif // LCD
-
-      myIMU.count = millis();
-      myIMU.sumCount = 0;
-      myIMU.sum = 0;
-    } // if (myIMU.dspDelt_t > 500)
+        //
+        if (myIMU.dspDelt_t > 500)
+        {
+  
+  #ifndef NO_SERIAL_DEBUG
+            Serial.print("ax = ");  Serial.print((int)1000 * myIMU.ax);
+            Serial.print(" ay = "); Serial.print((int)1000 * myIMU.ay);
+            Serial.print(" az = "); Serial.print((int)1000 * myIMU.az);
+            Serial.println(" mG-force");
     
-
-     
-          
-#ifdef SAMPLES_TO_OPENGL  //Send Heading to OpenGl App !!!!!!!
-              //043STx|yaw= 80.56|pitch= 18.43|roll= 10.29|End
-
-              dtostrf(myIMU.yaw,    7, 2, MsgToOpGL.zYaw);
-              dtostrf(myIMU.pitch,  7, 2, MsgToOpGL.zPitch);
-              dtostrf(myIMU.roll,   7, 2, MsgToOpGL.zPitch);
-              
-              sprintf(zbuffer, "STx|yaw=%s|pitch=%s|roll=%s|End", MsgToOpGL.zYaw, MsgToOpGL.zPitch, MsgToOpGL.zPitch);
-              MsgToOpGL.iLen = strlen(zbuffer);
-              MsgToOpGL.iLen += 3;
+            Serial.print("gx = ");  Serial.print(myIMU.gx, 2);
+            Serial.print(" gy = "); Serial.print(myIMU.gy, 2);
+            Serial.print(" gz = "); Serial.print(myIMU.gz, 2);
+            Serial.println(" deg/s");
     
-              strcpy(&MsgToOpGL.Msg.strMsg[3], zbuffer);
-              
-              sprintf(zbuffer, "%.03d", MsgToOpGL.iLen);
-              memcpy(MsgToOpGL.Msg.strLen, zbuffer, 3); 
-              
-              //Serial.println( MsgToOpGL.Msg.strMsg );
-              Serial.print(MsgToOpGL.Msg.strMsg);
-              //Serial.println(MsgToOpGL.iLen);         
-#endif//SAMPLES_TO_OPENGL        
+            Serial.print("mx = ");  Serial.print((int)myIMU.mx);
+            Serial.print(" my = "); Serial.print((int)myIMU.my);
+            Serial.print(" mz = "); Serial.print((int)myIMU.mz);
+            Serial.println(" mGauss");
+    
+            Serial.print("q0 = ");  Serial.print(*getQ());
+            Serial.print(" qx = "); Serial.print(*(getQ() + 1));
+            Serial.print(" qy = "); Serial.print(*(getQ() + 2));
+            Serial.print(" qz = "); Serial.println(*(getQ() + 3));
+    
+            myIMU.tempCount = myIMU.readTempData();  // Read the adc values
+            
+            // Temperature in degrees Centigrade
+            myIMU.temperature = ((float) myIMU.tempCount) / 333.87 + 21.0;
+            // Print temperature in degrees Centigrade
+            Serial.print("Temperature is ");  Serial.print(myIMU.temperature, 1);
+            Serial.println(" degrees C");
+  #endif//NO_SERIAL_DEBUG
+  
+            // Define output variables from updated quaternion---these are Tait-Bryan
+            // angles, commonly used in aircraft orientation. In this coordinate system,
+            // the positive z-axis is down toward Earth. Yaw is the angle between Sensor
+            // x-axis and Earth magnetic North (or true North if corrected for local
+            // declination, looking down on the sensor positive yaw is counterclockwise.
+            // Pitch is angle between sensor x-axis and Earth ground plane, toward the
+            // Earth is positive, up toward the sky is negative. Roll is angle between
+            // sensor y-axis and Earth ground plane, y-axis up is positive roll. These
+            // arise from the definition of the homogeneous rotation matrix constructed
+            // from quaternions. Tait-Bryan angles as well as Euler angles are
+            // non-commutative; that is, the get the correct orientation the rotations
+            // must be applied in the correct order which for this configuration is yaw,
+            // pitch, and then roll.
+            // For more see
+            // http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+            // which has additional links.
+            myIMU.yaw   = atan2(2.0f * (*(getQ() + 1) * *(getQ() + 2) + *getQ()
+                                        * *(getQ() + 3)), *getQ() * *getQ() + * (getQ() + 1)
+                                * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) - * (getQ() + 3)
+                                * *(getQ() + 3));
+            myIMU.pitch = -asin(2.0f * (*(getQ() + 1) * *(getQ() + 3) - *getQ()
+                                        * *(getQ() + 2)));
+            myIMU.roll  = atan2(2.0f * (*getQ() * *(getQ() + 1) + * (getQ() + 2)
+                                        * *(getQ() + 3)), *getQ() * *getQ() - * (getQ() + 1)
+                                * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) + * (getQ() + 3)
+                                * *(getQ() + 3));
+            myIMU.pitch *= RAD_TO_DEG;
+            myIMU.yaw   *= RAD_TO_DEG;
+      
+            // Declination of Bs As 2017
+            // - http://www.ngdc.noaa.gov/geomag-web/#declination
+            myIMU.yaw  -= 8.36; //Buenos aires 2017
+            myIMU.roll *= RAD_TO_DEG;
+  
+  #ifndef NO_SERIAL_DEBUG
+            Serial.print("Yaw, Pitch, Roll: ");
+            Serial.print(myIMU.yaw, 2);
+            Serial.print(", ");
+            Serial.print(myIMU.pitch, 2);
+            Serial.print(", ");
+            Serial.println(myIMU.roll, 2);
+    
+            Serial.print("rate = ");
+            Serial.print((float)myIMU.sumCount / myIMU.sum, 2);
+            Serial.println(" Hz");
+  #endif//NO_SERIAL_DEBUG
+  
+  #ifdef LCD
+        // With these settings the filter is updating at a ~145 Hz rate using the
+        // Madgwick scheme and >200 Hz using the Mahony scheme even though the
+        // display refreshes at only 2 Hz. The filter update rate is determined
+        // mostly by the mathematical steps in the respective algorithms, the
+        // processor speed (8 MHz for the 3.3V Pro Mini), and the magnetometer ODR:
+        // an ODR of 10 Hz for the magnetometer produce the above rates, maximum
+        // magnetometer ODR of 100 Hz produces filter update rates of 36 - 145 and
+        // ~38 Hz for the Madgwick and Mahony schemes, respectively. This is
+        // presumably because the magnetometer read takes longer than the gyro or
+        // accelerometer reads. This filter update rate should be fast enough to
+        // maintain accurate platform orientation for stabilization control of a
+        // fast-moving robot or quadcopter. Compare to the update rate of 200 Hz
+        // produced by the on-board Digital Motion Processor of Invensense's MPU6050
+        // 6 DoF and MPU9150 9DoF sensors. The 3.3 V 8 MHz Pro Mini is doing pretty
+        // well!
+  #endif // LCD
+  
+        myIMU.count = millis();
+        myIMU.sumCount = 0;
+        myIMU.sum = 0;
+      } // if (myIMU.dspDelt_t > 500)
+      
+  
+       
+            
+  #ifdef SAMPLES_TO_OPENGL  //Send Heading to OpenGl App !!!!!!!
+                //043STx|yaw= 80.56|pitch= 18.43|roll= 10.29|End
+  
+                dtostrf(myIMU.yaw,    7, 2, MsgToOpGL.zYaw);
+                dtostrf(myIMU.pitch,  7, 2, MsgToOpGL.zPitch);
+                dtostrf(myIMU.roll,   7, 2, MsgToOpGL.zPitch);
+                dtostrf(myIMU.deltat, 7, 2, MsgToOpGL.zDelT);
+                
+                
+                sprintf(zbuffer, "STx|yaw=%s|pitch=%s|roll=%s|delta=%s|End", MsgToOpGL.zYaw, MsgToOpGL.zPitch, MsgToOpGL.zPitch, MsgToOpGL.zDelT);
+                MsgToOpGL.iLen = strlen(zbuffer);
+                MsgToOpGL.iLen += 3;
+      
+                strcpy(&MsgToOpGL.Msg.strMsg[3], zbuffer);
+                
+                sprintf(zbuffer, "%.03d", MsgToOpGL.iLen);
+                memcpy(MsgToOpGL.Msg.strLen, zbuffer, 3); 
+                
+                //Serial.println( MsgToOpGL.Msg.strMsg );
+                Serial.print(MsgToOpGL.Msg.strMsg);
+                //Serial.println(MsgToOpGL.iLen);         
+  #endif//SAMPLES_TO_OPENGL        
 
 }
 
