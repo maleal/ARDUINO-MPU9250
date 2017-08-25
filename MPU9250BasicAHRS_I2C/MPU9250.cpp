@@ -482,6 +482,11 @@ void MPU9250::MPU9250SelfTest(float * destination)
   float factoryTrim[6];
   uint8_t FS = 0;
 
+#ifdef MONITOR_SERIE_DEBUG_SET_UP
+    Serial.println("Began Self Test calling MPU9250SelfTest()");
+#endif//MONITOR_SERIE_DEBUG_SET_UP
+
+
   // Set gyro sample rate to 1 kHz
   writeByte(MPU9250_ADDRESS, SMPLRT_DIV, 0x00);
   // Set gyro sample rate to 1 kHz and DLPF to 92 Hz
@@ -496,11 +501,6 @@ void MPU9250::MPU9250SelfTest(float * destination)
   // Get average current values of gyro and acclerometer
   for (int ii = 0; ii < 200; ii++)
   {
-
-#ifndef NO_SERIAL_DEBUG
-    Serial.print("BHW::ii = ");
-    Serial.println(ii);
-#endif
 
     // Read the six raw data registers into data array
     readBytes(MPU9250_ADDRESS, ACCEL_XOUT_H, 6, &rawData[0]);
@@ -617,10 +617,10 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
   // Make sure resolution has been calculated
   getMres();
 
-#ifndef NO_SERIAL_DEBUG
+#ifdef MONITOR_SERIE_DEBUG_SET_UP
   Serial.println(F("Mag Calibration: Wave device in a figure 8 until done!"));
   Serial.println(F("  4 seconds to get ready followed by 15 seconds of sampling)"));
-#endif
+#endif//MONITOR_SERIE_DEBUG_SET_UP
   delay(4000);
 
   // shoot for ~fifteen seconds of mag data
@@ -693,7 +693,7 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
   scale_dest[1] = avg_rad / ((float)mag_scale[1]);
   scale_dest[2] = avg_rad / ((float)mag_scale[2]);
 
-#ifndef NO_SERIAL_DEBUG
+#ifdef MONITOR_SERIE_DEBUG_SET_UP
   Serial.println(F("Mag Calibration done!"));
 #endif//_NO_SERIAL_DEBUG
 }

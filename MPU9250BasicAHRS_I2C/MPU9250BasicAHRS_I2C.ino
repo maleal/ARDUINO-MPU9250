@@ -243,24 +243,60 @@ void loop()
                          * myIMU.factoryMagCalibration[1] - myIMU.magBias[1];
               myIMU.mz = (float)myIMU.magCount[2] * myIMU.mRes
                          * myIMU.factoryMagCalibration[2] - myIMU.magBias[2];
-        } // if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
+
+              // Must be called before updating quaternions!
+              myIMU.updateTime();
+            
+              // Sensors x (y)-axis of the accelerometer is aligned with the y (x)-axis of
+              // the magnetometer; the magnetometer z-axis (+ down) is opposite to z-axis
+              // (+ up) of accelerometer and gyro! We have to make some allowance for this
+              // orientationmismatch in feeding the output to the quaternion filter. For the
+              // MPU-9250, we have chosen a magnetic rotation that keeps the sensor forward
+              // along the x-axis just like in the LSM9DS0 sensor. This rotation can be
+              // modified to allow any convenient orientation convention. This is ok by
+              // aircraft orientation standards! Pass gyro rate as rad/s
+              MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx * DEG_TO_RAD,
+                                     myIMU.gy * DEG_TO_RAD, myIMU.gz * DEG_TO_RAD, myIMU.my,
+                                     myIMU.mx, myIMU.mz, myIMU.deltat);
+        
+              // Define output variables from updated quaternion---these are Tait-Bryan
+              // angles, commonly used in aircraft orientation. In this coordinate system,
+              // the positive z-axis is down toward Earth. Yaw is the angle between Sensor
+              // x-axis and Earth magnetic North (or true North if corrected for local
+              // declination, looking down on the sensor positive yaw is ..
+              // Pitch is angle between sensor x-axis and Earth ground plane, toward the
+              // Earth is positive, up toward the sky is negative. Roll is angle between
+              // sensor y-axis and Earth ground plane, y-axis up is positive roll. These
+              // arise from the definition of the homogeneous rotation matrix constructed
+              // from quaternions. Tait-Bryan angles as well as Euler angles are
+              // non-commutative; that is, the get the correct orientation the rotations
+              // must be applied in the correct order which for this configuration is yaw,
+              // pitch, and then roll.
+              // For more see
+              // http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+              // which has additional links.
+              myIMU.yaw   = atan2(2.0f * (*(getQ() + 1) * *(getQ() + 2) + *getQ()
+                                          * *(getQ() + 3)), *getQ() * *getQ() + * (getQ() + 1)
+                                  * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) - * (getQ() + 3)
+                                  * *(getQ() + 3));
+              myIMU.pitch = -asin(2.0f * (*(getQ() + 1) * *(getQ() + 3) - *getQ()
+                                          * *(getQ() + 2)));
+              myIMU.roll  = atan2(2.0f * (*getQ() * *(getQ() + 1) + * (getQ() + 2)
+                                          * *(getQ() + 3)), *getQ() * *getQ() - * (getQ() + 1)
+                                  * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) + * (getQ() + 3)
+                                  * *(getQ() + 3));
+              myIMU.pitch *= RAD_TO_DEG;
+              myIMU.yaw   *= RAD_TO_DEG;
+        
+              // Declination of Bs As 2017
+              // - http://www.ngdc.noaa.gov/geomag-web/#declination
+              myIMU.yaw  -= 8.36; //Buenos aires 2017
+              myIMU.roll *= RAD_TO_DEG;
+        }// if (readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
   
-        // Must be called before updating quaternions!
-        myIMU.updateTime();
-      
-        // Sensors x (y)-axis of the accelerometer is aligned with the y (x)-axis of
-        // the magnetometer; the magnetometer z-axis (+ down) is opposite to z-axis
-        // (+ up) of accelerometer and gyro! We have to make some allowance for this
-        // orientationmismatch in feeding the output to the quaternion filter. For the
-        // MPU-9250, we have chosen a magnetic rotation that keeps the sensor forward
-        // along the x-axis just like in the LSM9DS0 sensor. This rotation can be
-        // modified to allow any convenient orientation convention. This is ok by
-        // aircraft orientation standards! Pass gyro rate as rad/s
-        MahonyQuaternionUpdate(myIMU.ax, myIMU.ay, myIMU.az, myIMU.gx * DEG_TO_RAD,
-                               myIMU.gy * DEG_TO_RAD, myIMU.gz * DEG_TO_RAD, myIMU.my,
-                               myIMU.mx, myIMU.mz, myIMU.deltat);
-  
-    
+        
+        
+        
         // Serial print and/or display at 0.5 s rate independent of data rates
         myIMU.dspDelt_t = millis() - myIMU.count;
   
@@ -314,6 +350,7 @@ void loop()
             // For more see
             // http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
             // which has additional links.
+            /*
             myIMU.yaw   = atan2(2.0f * (*(getQ() + 1) * *(getQ() + 2) + *getQ()
                                         * *(getQ() + 3)), *getQ() * *getQ() + * (getQ() + 1)
                                 * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) - * (getQ() + 3)
@@ -331,8 +368,8 @@ void loop()
             // - http://www.ngdc.noaa.gov/geomag-web/#declination
             myIMU.yaw  -= 8.36; //Buenos aires 2017
             myIMU.roll *= RAD_TO_DEG;
-  
-  #ifdef MONITOR_SERIE_DEBUG_ONLY_ATTITUDE
+            */
+    #ifdef MONITOR_SERIE_DEBUG_ONLY_ATTITUDE
             Serial.print("Yaw, Pitch, Roll: ");
             Serial.print(myIMU.yaw, 2);
             Serial.print(", ");
@@ -366,7 +403,8 @@ void loop()
         myIMU.count = millis();
         myIMU.sumCount = 0;
         myIMU.sum = 0;
-      } // if (myIMU.dspDelt_t > 500)
+      
+      }// if (myIMU.dspDelt_t > 500)
       
   
        
