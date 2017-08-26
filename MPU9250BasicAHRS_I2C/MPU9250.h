@@ -240,7 +240,7 @@ public:
     uint8_t ak8963WhoAmI_SPI();
 
   public:
-    float pitch, yaw, roll;
+    float pitch= 0.0f, yaw= 0.0f, roll= 0.0f;
     float temperature;   // Stores the real internal chip temperature in Celsius
     int16_t tempCount;   // Temperature raw count output
     uint32_t dspDelt_t = 0; // Used to control display output rate
