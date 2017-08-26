@@ -482,6 +482,11 @@ void MPU9250::MPU9250SelfTest(float * destination)
   float factoryTrim[6];
   uint8_t FS = 0;
 
+#ifdef MONITOR_SERIE_DEBUG_SET_UP
+    Serial.println("Began Self Test calling MPU9250SelfTest()");
+#endif//MONITOR_SERIE_DEBUG_SET_UP
+
+
   // Set gyro sample rate to 1 kHz
   writeByte(MPU9250_ADDRESS, SMPLRT_DIV, 0x00);
   // Set gyro sample rate to 1 kHz and DLPF to 92 Hz
