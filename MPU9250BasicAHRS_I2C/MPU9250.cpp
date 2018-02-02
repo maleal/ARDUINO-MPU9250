@@ -695,7 +695,7 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
 
 #ifdef MONITOR_SERIE_DEBUG_SET_UP
   Serial.println(F("Mag Calibration done!"));
-#endif//_NO_SERIAL_DEBUG
+#endif//MONITOR_SERIE_DEBUG_SET_UP
 }
 
 // Wire.h read and write protocols
