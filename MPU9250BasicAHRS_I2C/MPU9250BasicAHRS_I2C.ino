@@ -27,11 +27,11 @@
 */
 
 // Set to false for basic data read
-#define     SAMPLES_TO_OPENGL
-//#define     MONITOR_SERIE_DEBUG_SET_UP
+//#define     SAMPLES_TO_OPENGL
+#define     MONITOR_SERIE_DEBUG_SET_UP
 //#define     MONITOR_SERIE_DEBUG_ALL_SENSOR_DATA
-//#define     MONITOR_SERIE_DEBUG_ONLY_ATTITUDE
-
+#define     MONITOR_SERIE_DEBUG_ONLY_ATTITUDE
+#define     MONITOR_SELFTEST_GYRO_ACEL
 #include "MPU9250.h"
 #include "quaternionFilters.h"
 
@@ -87,26 +87,26 @@ void setup()
 
   if (c == 0x71) // WHO_AM_I should always be 0x71
   {
+      
+      #ifdef MONITOR_SELFTEST_GYRO_ACEL
       // Start by performing self test and reporting values
       myIMU.MPU9250SelfTest(myIMU.selfTest);
       
-      #ifdef MONITOR_SERIE_DEBUG_SET_UP
-      {
-            Serial.println(F("MPU9250 is online..."));
-            Serial.print(F("x-axis self test: acceleration trim within : "));
-            Serial.print(myIMU.selfTest[0], 1); Serial.println("% of factory value");
-            Serial.print(F("y-axis self test: acceleration trim within : "));
-            Serial.print(myIMU.selfTest[1], 1); Serial.println("% of factory value");
-            Serial.print(F("z-axis self test: acceleration trim within : "));
-            Serial.print(myIMU.selfTest[2], 1); Serial.println("% of factory value");
-            Serial.print(F("x-axis self test: gyration trim within : "));
-            Serial.print(myIMU.selfTest[3], 1); Serial.println("% of factory value");
-            Serial.print(F("y-axis self test: gyration trim within : "));
-            Serial.print(myIMU.selfTest[4], 1); Serial.println("% of factory value");
-            Serial.print(F("z-axis self test: gyration trim within : "));
-            Serial.print(myIMU.selfTest[5], 1); Serial.println("% of factory value");
-      }
-      #endif //MONITOR_SERIE_DEBUG_SET_UP
+      Serial.println(F("MPU9250 is online..."));
+      Serial.print(F("x-axis self test: acceleration trim within : "));
+      Serial.print(myIMU.selfTest[0], 1); Serial.println("% of factory value");
+      Serial.print(F("y-axis self test: acceleration trim within : "));
+      Serial.print(myIMU.selfTest[1], 1); Serial.println("% of factory value");
+      Serial.print(F("z-axis self test: acceleration trim within : "));
+      Serial.print(myIMU.selfTest[2], 1); Serial.println("% of factory value");
+      Serial.print(F("x-axis self test: gyration trim within : "));
+      Serial.print(myIMU.selfTest[3], 1); Serial.println("% of factory value");
+      Serial.print(F("y-axis self test: gyration trim within : "));
+      Serial.print(myIMU.selfTest[4], 1); Serial.println("% of factory value");
+      Serial.print(F("z-axis self test: gyration trim within : "));
+      Serial.print(myIMU.selfTest[5], 1); Serial.println("% of factory value");
+      
+      #endif //MONITOR_SELFTEST_GYRO_ACEL
 
       // Calibrate gyro and accelerometers, load biases in bias registers
       myIMU.calibrateMPU9250(myIMU.gyroBias, myIMU.accelBias);
@@ -437,7 +437,3 @@ void loop()
   #endif//SAMPLES_TO_OPENGL        
 
 }
-
-
-
-
