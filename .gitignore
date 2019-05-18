@@ -3,3 +3,10 @@
 ################################################################################
 
 /MPU9250BasicAHRS_I2C/MPU9250BasicAHRS_I2C.sln
+/MPU9250BasicAHRS_I2C/MPU9250BasicAHRS_I2C.vcxproj
+/MPU9250BasicAHRS_I2C/MPU9250BasicAHRS_I2C.vcxproj.filters
+/MPU9250BasicAHRS_I2C/MPU9250BasicAHRS_I2C.vcxproj.user
+/.vs
+/MPU9250BasicAHRS_I2C/.vs/MPU9250BasicAHRS_I2C/v15
+/MPU9250BasicAHRS_I2C/Release
+/MPU9250BasicAHRS_I2C/__vm
