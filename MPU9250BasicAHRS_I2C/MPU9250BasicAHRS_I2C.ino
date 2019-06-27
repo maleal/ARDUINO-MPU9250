@@ -28,13 +28,17 @@
 
 // Set to false for basic data read
 //#define     SAMPLES_TO_OPENGL
+#include <EEPROM.h>
 #define     MONITOR_SETTING_UP_MPU9250
 //#define     MONITOR_SERIE_DEBUG_ALL_SENSOR_DATA
 #define     MONITOR_SHOW_ATTITUDE
 #define     MONITOR_SELFTEST_GYRO_ACEL
 #define     MONITOR_MAGTER_AK8963_CALIBRATION
+
+
 #include    "MPU9250.h"
 #include    "quaternionFilters.h"
+#include    "DataStorage.h"
 
 
 
@@ -91,6 +95,8 @@ void setup()
       
           #ifdef MONITOR_SELFTEST_GYRO_ACEL
           // Start by performing self test and reporting values
+		  Serial.println("Began Self Test calling MPU9250SelfTest()");
+
           myIMU.MPU9250SelfTest(myIMU.selfTest);
           
               Serial.println(F("MPU9250 is online..."));
@@ -119,9 +125,10 @@ void setup()
           // Read the WHO_AM_I register of the magnetometer, this is a good test of
           // communication
           byte d = myIMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
-          #ifdef MONITOR_SETTING_UP_MPU9250
+          
+		  #ifdef MONITOR_SETTING_UP_MPU9250
               Serial.println("MPU9250 initialized for active data mode....");
-              Serial.print("AK8963 ");
+              Serial.print("AK8963 Mag");
               Serial.print("I AM 0x");
               Serial.print(d, HEX);
               Serial.print(" I should be 0x");
@@ -359,40 +366,22 @@ void loop()
             myIMU.yaw  -= 8.36; //Buenos aires 2017
             myIMU.roll *= RAD_TO_DEG;
             */
-    #ifdef MONITOR_SHOW_ATTITUDE
-            Serial.print("Yaw, Pitch, Roll: ");
-            Serial.print(myIMU.yaw, 2);
-            Serial.print(", ");
-            Serial.print(myIMU.pitch, 2);
-            Serial.print(", ");
-            Serial.println(myIMU.roll, 2);
+			#ifdef MONITOR_SHOW_ATTITUDE
+					Serial.print("Yaw, Pitch, Roll: ");
+					Serial.print(myIMU.yaw, 2);
+					Serial.print(", ");
+					Serial.print(myIMU.pitch, 2);
+					Serial.print(", ");
+					Serial.println(myIMU.roll, 2);
     
-            Serial.print("rate = ");
-            Serial.print((float)myIMU.sumCount / myIMU.sum, 2);
-            Serial.println(" Hz");
-  #endif//MONITOR_SHOW_ATTITUDE
+					Serial.print("rate = ");
+					Serial.print((float)myIMU.sumCount / myIMU.sum, 2);
+					Serial.println(" Hz");
+			#endif//MONITOR_SHOW_ATTITUDE
   
-  #ifdef LCD
-        // With these settings the filter is updating at a ~145 Hz rate using the
-        // Madgwick scheme and >200 Hz using the Mahony scheme even though the
-        // display refreshes at only 2 Hz. The filter update rate is determined
-        // mostly by the mathematical steps in the respective algorithms, the
-        // processor speed (8 MHz for the 3.3V Pro Mini), and the magnetometer ODR:
-        // an ODR of 10 Hz for the magnetometer produce the above rates, maximum
-        // magnetometer ODR of 100 Hz produces filter update rates of 36 - 145 and
-        // ~38 Hz for the Madgwick and Mahony schemes, respectively. This is
-        // presumably because the magnetometer read takes longer than the gyro or
-        // accelerometer reads. This filter update rate should be fast enough to
-        // maintain accurate platform orientation for stabilization control of a
-        // fast-moving robot or quadcopter. Compare to the update rate of 200 Hz
-        // produced by the on-board Digital Motion Processor of Invensense's MPU6050
-        // 6 DoF and MPU9150 9DoF sensors. The 3.3 V 8 MHz Pro Mini is doing pretty
-        // well!
-  #endif // LCD
-  
-        myIMU.count = millis();
-        myIMU.sumCount = 0;
-        myIMU.sum = 0;
+			myIMU.count = millis();
+			myIMU.sumCount = 0;
+			myIMU.sum = 0;
       
       }// if (myIMU.dspDelt_t > 500)
       

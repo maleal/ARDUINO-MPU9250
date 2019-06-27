@@ -47,8 +47,8 @@ void MPU9250::getGres()
   {
     // Possible gyro scales (and their register bit settings) are:
     // 250 DPS (00), 500 DPS (01), 1000 DPS (10), and 2000 DPS (11).
-    // Here's a bit of an algorith to calculate DPS/(ADC tick) based on that
-    // 2-bit value:
+    // Here's a bit of an algorith to calculate DPS(degree per second)/(ADC word) based on that
+    // 
     case GFS_250DPS:
       gRes = 250.0f / 32768.0f;
       break;
@@ -70,8 +70,8 @@ void MPU9250::getAres()
   {
     // Possible accelerometer scales (and their register bit settings) are:
     // 2 Gs (00), 4 Gs (01), 8 Gs (10), and 16 Gs  (11).
-    // Here's a bit of an algorith to calculate DPS/(ADC tick) based on that
-    // 2-bit value:
+    // Here's a bit of an algorith to calculate Accelerometer Full Scale(G)/(ADC word) based on that
+    //
     case AFS_2G:
       aRes = 2.0f / 32768.0f;
       break;
@@ -324,6 +324,10 @@ void MPU9250::calibrateMPU9250(float * gyroBias, float * accelBias)
     // Set accelerometer full-scale to 2 g, maximum sensitivity
     writeByte(MPU9250_ADDRESS, ACCEL_CONFIG, 0x00);
 
+	//Datos de sensibilidad del fabricante si elegimos para el Gyro 250 DPS
+	//										   Acce 2 G como Full Scala
+	//Esto significa que por cada grado de movimiento nos da una cuenta de 131
+	//y por una aceleracion de 1G nos da 16384 cuentas
     uint16_t  gyrosensitivity  = 131;   // = 131 LSB/degrees/sec
     uint16_t  accelsensitivity = 16384; // = 16384 LSB/g
 
@@ -337,10 +341,12 @@ void MPU9250::calibrateMPU9250(float * gyroBias, float * accelBias)
     // At end of sample accumulation, turn off FIFO sensor read
     // Disable gyro and accelerometer sensors for FIFO
     writeByte(MPU9250_ADDRESS, FIFO_EN, 0x00);
-    // Read FIFO sample count
+    
+	// Read FIFO sample count
     readBytes(MPU9250_ADDRESS, FIFO_COUNTH, 2, &data[0]);
     fifo_count = ((uint16_t)data[0] << 8) | data[1];
-    // How many sets of full gyro and accelerometer data for averaging
+    
+	// How many sets of full gyro and accelerometer data for averaging
     packet_count = fifo_count/12;
 
     for (ii = 0; ii < packet_count; ii++)
@@ -492,11 +498,6 @@ void MPU9250::MPU9250SelfTest(float * destination)
 	  int32_t gAvg[3] = {0}, aAvg[3] = {0}, aSTAvg[3] = {0}, gSTAvg[3] = {0};
 	  float factoryTrim[6];
 	  uint8_t FS = 0;
-
-#ifdef MONITOR_SELFTEST_GYRO_ACEL
-		Serial.println("Began Self Test calling MPU9250SelfTest()");
-#endif//MONITOR_SELFTEST_GYRO_ACEL
-
 
 	  // Set gyro sample rate to 1 kHz
 	  writeByte(MPU9250_ADDRESS, SMPLRT_DIV, 0x00);
