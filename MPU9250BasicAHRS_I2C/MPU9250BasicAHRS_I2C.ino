@@ -1,5 +1,7 @@
-/* MPU9250 Basic Example Code
-  by: Kris Winer
+/* 
+  Aero-Quad Carballo-Rinke - May 2019 -
+  based on MPU9250 - Example Code
+  by Kris Winer
   date: April 1, 2014
   license: Beerware - Use this code however you'd like. If you
   find it useful you can buy me a beer some time.
@@ -27,13 +29,13 @@
 */
 
 // Set to false for basic data read
-//#define     SAMPLES_TO_OPENGL
+#define     SAMPLES_TO_OPENGL
 #include <EEPROM.h>
-#define     MONITOR_SETTING_UP_MPU9250
+//#define     MONITOR_SETTING_UP_MPU9250
 //#define     MONITOR_SERIE_DEBUG_ALL_SENSOR_DATA
-#define     MONITOR_SHOW_ATTITUDE
-#define     MONITOR_SELFTEST_GYRO_ACEL
-#define     MONITOR_MAGTER_AK8963_CALIBRATION
+//#define     MONITOR_SHOW_ATTITUDE
+//#define     MONITOR_SELFTEST_GYRO_ACEL
+//#define     MONITOR_MAGTER_AK8963_CALIBRATION
 
 
 #include    "MPU9250.h"
@@ -164,7 +166,6 @@ void setup()
           myIMU.getGres();
           myIMU.getMres();
 
-          #ifdef MONITOR_MAGTER_AK8963_CALIBRATION
           /*  Importante:
            *  Anotar los valores mostrados por los printf de mas abajo
            *  y transformarlos en constantes para solo tener que calibrar una vez
@@ -174,7 +175,8 @@ void setup()
           // The next call delays for 4 seconds, and then records about 15 seconds of
           // data to calculate bias and scale.
           myIMU.magCalMPU9250(myIMU.magBias, myIMU.magScale);
-
+		  
+		  #ifdef MONITOR_MAGTER_AK8963_CALIBRATION
           delay(2000); // Add delay to see results before serial spew of data
               Serial.println("AK8963 mag biases x y z(mG)");
               Serial.println(myIMU.magBias[0]);
@@ -384,35 +386,34 @@ void loop()
 			myIMU.sum = 0;
       
       }// if (myIMU.dspDelt_t > 500)
-      
   
-       
+      
             
   #ifdef SAMPLES_TO_OPENGL  //Send Heading to OpenGl App !!!!!!!
                 //043STx|yaw= 80.56|pitch= 18.43|roll= 10.29|End
 
-                dtostrf(myIMU.yaw,    7, 2, zBuffer.zYaw);
-                dtostrf(myIMU.pitch,  7, 2, zBuffer.zPitch);
-                dtostrf(myIMU.roll,   7, 2, zBuffer.zRoll);
-                dtostrf(myIMU.deltat, 7, 2, zBuffer.zDelT);
+        dtostrf(myIMU.yaw,    7, 2, zBuffer.zYaw);
+        dtostrf(myIMU.pitch,  7, 2, zBuffer.zPitch);
+        dtostrf(myIMU.roll,   7, 2, zBuffer.zRoll);
+        dtostrf(myIMU.deltat, 7, 2, zBuffer.zDelT);
                 
                 
-                //sprintf(zbuffer, "Stx|yaw=%s|pitch=%s|roll=%s|delta=%s|End", MsgToOpGL.zYaw, MsgToOpGL.zPitch, MsgToOpGL.zPitch, MsgToOpGL.zDelT);
-                sprintf(zBuffer.zAll, "Stx|yaw=%s|pitch=%s|roll=%s|delta=%s|End", zBuffer.zYaw, zBuffer.zPitch, zBuffer.zRoll, zBuffer.zDelT);
+        //sprintf(zbuffer, "Stx|yaw=%s|pitch=%s|roll=%s|delta=%s|End", MsgToOpGL.zYaw, MsgToOpGL.zPitch, MsgToOpGL.zPitch, MsgToOpGL.zDelT);
+        sprintf(zBuffer.zAll, "Stx|yaw=%s|pitch=%s|roll=%s|delta=%s|End", zBuffer.zYaw, zBuffer.zPitch, zBuffer.zRoll, zBuffer.zDelT);
                 
-                zBuffer.iLen = strlen(zBuffer.zAll);
-                zBuffer.iLen += 3;
+        zBuffer.iLen = strlen(zBuffer.zAll);
+        zBuffer.iLen += 3;
       
-                //strcpy(uTrama.strLen, zbuffer);
+        //strcpy(uTrama.strLen, zbuffer);
                 
-                sprintf(MsgToOpGL.zLen, "%.03d", zBuffer.iLen);
-                strcat(MsgToOpGL.zLen, zBuffer.zAll);
+        sprintf(MsgToOpGL.zLen, "%.03d", zBuffer.iLen);
+        strcat(MsgToOpGL.zLen, zBuffer.zAll);
                 
-                //memcpy(MsgToOpGL.Msg.strLen, zbuffer, 3); 
+        //memcpy(MsgToOpGL.Msg.strLen, zbuffer, 3); 
                 
-                //
-                Serial.print(MsgToOpGL.zMsg);
-                //Serial.println(MsgToOpGL.zMsg);         
+        //
+        Serial.print(MsgToOpGL.zMsg);
+        //Serial.println(MsgToOpGL.zMsg);         
   #endif//SAMPLES_TO_OPENGL        
 
 }

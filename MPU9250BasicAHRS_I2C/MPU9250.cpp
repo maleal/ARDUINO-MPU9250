@@ -175,11 +175,11 @@ void MPU9250::initAK8963(float * destination)
   
 	  // First extract the factory calibration for each magnetometer axis
 	  uint8_t rawData[3];  // x/y/z gyro calibration data stored here
-	  // TODO: Test this!! Likely doesn't work
+	  // 
 	  writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x00); // Power down magnetometer
-	  delay(10);
+	  delay(100);
 	  writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x0F); // Enter Fuse ROM access mode
-	  delay(10);
+	  delay(100);
 
 	  // Read the x-, y-, and z-axis calibration values
 	  readBytes(AK8963_ADDRESS, AK8963_ASAX, 3, &rawData[0]);
@@ -188,8 +188,9 @@ void MPU9250::initAK8963(float * destination)
 	  destination[0] =  (float)(rawData[0] - 128)/256. + 1.;
 	  destination[1] =  (float)(rawData[1] - 128)/256. + 1.;
 	  destination[2] =  (float)(rawData[2] - 128)/256. + 1.;
+	  
 	  writeByte(AK8963_ADDRESS, AK8963_CNTL, 0x00); // Power down magnetometer
-	  delay(10);
+	  delay(100);
 
 	  // Configure the magnetometer for continuous read and highest resolution.
 	  // Set Mscale bit 4 to 1 (0) to enable 16 (14) bit resolution in CNTL
@@ -198,7 +199,7 @@ void MPU9250::initAK8963(float * destination)
 
 	  // Set magnetometer data resolution and sample ODR
 	  writeByte(AK8963_ADDRESS, AK8963_CNTL, Mscale << 4 | Mmode);
-	  delay(10);
+	  delay(100);
 }
 
 void MPU9250::initMPU9250()
@@ -629,9 +630,11 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
     // Make sure resolution has been calculated
     getMres();
 
-    Serial.println(F("Mag Calibration: Wave device in a figure 8 until done!"));
-    Serial.println(F("  4 seconds to get ready followed by 15 seconds of sampling)"));
-    delay(4000);
+	#ifdef MONITOR_MAGTER_AK8963_CALIBRATION
+		Serial.println(F("Mag Calibration: Wave device in a figure 8 until done!"));
+		Serial.println(F("  4 seconds to get ready followed by 15 seconds of sampling)"));
+		delay(4000);
+	#endif//MONITOR_MAGTER_AK8963_CALIBRATION
 
     // shoot for ~fifteen seconds of mag data
     // at 8 Hz ODR, new mag data is available every 125 ms
@@ -698,8 +701,11 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
     scale_dest[0] = avg_rad / ((float)mag_scale[0]);
     scale_dest[1] = avg_rad / ((float)mag_scale[1]);
     scale_dest[2] = avg_rad / ((float)mag_scale[2]);
-
+	
+	#ifdef MONITOR_MAGTER_AK8963_CALIBRATION
     Serial.println(F("Mag Calibration done!"));
+	#endif//MONITOR_MAGTER_AK8963_CALIBRATION
+
 }
 
 // Wire.h read and write protocols

@@ -33,14 +33,14 @@ typedef struct strCalStorage {
 };
 
 
-class CaltionStorage
+class CalStorage
 {
 	public:
 		bool GetStorage(char version[], strCalStorage* out);
 		bool PutStorage(char version[]);
 	public:
-		CaltionStorage();
-		~CaltionStorage();
+		CalStorage();
+		~CalStorage();
 
 	private:
 		int _eeAddress;

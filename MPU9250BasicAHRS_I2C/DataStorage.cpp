@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "DataStorage.h"
 
-bool CaltionStorage::GetStorage(char version[], strCalStorage* out) {
+bool CalStorage::GetStorage(char version[], strCalStorage* out) {
 
 	int elenght = EEPROM.length();
   
@@ -20,7 +20,7 @@ bool CaltionStorage::GetStorage(char version[], strCalStorage* out) {
 	}
 }
 
-bool CaltionStorage::PutStorage(char version[]) {
+bool CalStorage::PutStorage(char version[]) {
 
 	int elenght = EEPROM.length();
 	bool write = true;
@@ -39,16 +39,16 @@ bool CaltionStorage::PutStorage(char version[]) {
 	}
 
 	if (write) {
-
+		EEPROM.put(_eeAddress, _Storage);
 	}
 }
 
-CaltionStorage::CaltionStorage()
+CalStorage::CalStorage()
 {
 	memset(&_Storage, 0, sizeof(strCalStorage));
 	_eeAddress = 0;
 }
 
-CaltionStorage::~CaltionStorage()
+CalStorage::~CalStorage()
 {
 }
