@@ -187,57 +187,61 @@
 
 class MPU9250
 {
-  protected:
-    // Set initial input parameters
-    enum Ascale
-    {
-      AFS_2G = 0,
-      AFS_4G,
-      AFS_8G,
-      AFS_16G
-    };
+	public:
+		// Set initial input parameters
+		enum Ascale
+		{
+		  AFS_2G = 0,
+		  AFS_4G,
+		  AFS_8G,
+		  AFS_16G
+		};
 
-    enum Gscale {
-      GFS_250DPS = 0,
-      GFS_500DPS,
-      GFS_1000DPS,
-      GFS_2000DPS
-    };
+		enum Gscale {
+		  GFS_250DPS = 0,
+		  GFS_500DPS,
+		  GFS_1000DPS,
+		  GFS_2000DPS
+		};
 
-    enum Mscale {
-      MFS_14BITS = 0, // 0.6 mG per LSB
-      MFS_16BITS      // 0.15 mG per LSB
-    };
+		enum Mscale {
+		  MFS_14BITS = 0, // 0.6 mG per LSB
+		  MFS_16BITS      // 0.15 mG per LSB
+		};
 
-    enum M_MODE {
-      M_8HZ = 0x02,  // 8 Hz update
-      M_100HZ = 0x06 // 100 Hz continuous magnetometer
-    };
+		enum M_MODE {
+		  M_8HZ = 0x02,  // 8 Hz update
+		  M_100HZ = 0x06 // 100 Hz continuous magnetometer
+		};
 
-    // TODO: Add setter methods for this hard coded stuff
-    // Specify sensor full scale
-    uint8_t Gscale = GFS_250DPS;
-    uint8_t Ascale = AFS_2G;
-    // Choose either 14-bit or 16-bit magnetometer resolution
-    uint8_t Mscale = MFS_16BITS;
+		// TODO: Add setter methods for this hard coded stuff
+		// Specify sensor full scale
+		uint8_t Gscale = GFS_250DPS;
+		uint8_t Ascale = AFS_2G;
+		// Choose either 14-bit or 16-bit magnetometer resolution
+		uint8_t Mscale = MFS_16BITS;
 
-    // 2 for 8 Hz, 6 for 100 Hz continuous magnetometer data read
-    uint8_t Mmode = M_8HZ;
+		// 2 for 8 Hz, 6 for 100 Hz continuous magnetometer data read
+		uint8_t Mmode = M_8HZ;
 
-    // SPI chip select pin
-    int8_t _csPin;
+		// SPI chip select pin
+		int8_t _csPin;
 
-    uint8_t writeByteWire(uint8_t, uint8_t, uint8_t);
-    uint8_t writeByteSPI(uint8_t, uint8_t);
-    uint8_t readByteSPI(uint8_t subAddress);
-    uint8_t readByteWire(uint8_t address, uint8_t subAddress);
-    bool magInit();
-    void kickHardware();
-    void select();
-    void deselect();
-// TODO: Remove this next line
-public:
-    uint8_t ak8963WhoAmI_SPI();
+		uint8_t writeByteWire(uint8_t, uint8_t, uint8_t);
+		uint8_t writeByteSPI(uint8_t, uint8_t);
+		uint8_t readByteSPI(uint8_t subAddress);
+		uint8_t readByteWire(uint8_t address, uint8_t subAddress);
+		bool magInit();
+		void kickHardware();
+		void select();
+		void deselect();
+		// TODO: Remove this next line
+	public:
+		uint8_t ak8963WhoAmI_SPI();
+	protected:
+		float _magBias[3] = { 0, 0, 0 };
+	public:
+		float * GetMagBias();
 
   public:
     float pitch= 0.0f, yaw= 0.0f, roll= 0.0f;
@@ -261,7 +265,7 @@ public:
     // Bias corrections for gyro, accelerometer, and magnetometer
     float gyroBias[3]  = {0, 0, 0},
           accelBias[3] = {0, 0, 0},
-          magBias[3]   = {0, 0, 0},
+          //_magBias[3]   = {0, 0, 0},
           magScale[3]  = {0, 0, 0};
     float selfTest[6];
     // Stores the 16-bit signed accelerometer sensor output
@@ -281,7 +285,7 @@ public:
     void initMPU9250();
     void calibrateMPU9250(float * gyroBias, float * accelBias);
     void MPU9250SelfTest(float * destination);
-    void magCalMPU9250(float * dest1, float * dest2);
+    void magCalMPU9250(float * dest2);
     uint8_t writeByte(uint8_t, uint8_t, uint8_t);
     uint8_t readByte(uint8_t, uint8_t);
     uint8_t readBytes(uint8_t, uint8_t, uint8_t, uint8_t *);

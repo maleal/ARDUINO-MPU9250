@@ -29,7 +29,7 @@ typedef struct strCalStorage {
 	char version[5];
 	uint8_t gyroStorage[6];
 	uint8_t acelStorage[6];
-	uint8_t magnStorage[6];
+	float magnStorage[3];
 };
 
 

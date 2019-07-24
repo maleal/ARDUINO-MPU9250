@@ -618,10 +618,10 @@ void MPU9250::MPU9250SelfTest(float * destination)
 
 // Function which accumulates magnetometer data after device initialization.
 // It calculates the bias and scale in the x, y, and z axes.
-void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
+void MPU9250::magCalMPU9250( float * scale_dest)
 {
     uint16_t ii = 0, sample_count = 0;
-    int32_t mag_bias[3]  = {0, 0, 0},
+    float mag_b[3]  = {0, 0, 0},
             mag_scale[3] = {0, 0, 0};
     int16_t mag_max[3]  = {0x8000, 0x8000, 0x8000},
             mag_min[3]  = {0x7FFF, 0x7FFF, 0x7FFF},
@@ -676,27 +676,27 @@ void MPU9250::magCalMPU9250(float * bias_dest, float * scale_dest)
   
     // Get hard iron correction
     // Get 'average' x mag bias in counts
-    mag_bias[0]  = (mag_max[0] + mag_min[0]) / 2;
+    mag_b[0]  = (mag_max[0] + mag_min[0]) / 2.0f;
     // Get 'average' y mag bias in counts
-    mag_bias[1]  = (mag_max[1] + mag_min[1]) / 2;
+    mag_b[1]  = (mag_max[1] + mag_min[1]) / 2.0f;
     // Get 'average' z mag bias in counts
-    mag_bias[2]  = (mag_max[2] + mag_min[2]) / 2;
+    mag_b[2]  = (mag_max[2] + mag_min[2]) / 2.0f;
 
     // Save mag biases in G for main program
-    bias_dest[0] = (float)mag_bias[0] * mRes * factoryMagCalibration[0];
-    bias_dest[1] = (float)mag_bias[1] * mRes * factoryMagCalibration[1];
-    bias_dest[2] = (float)mag_bias[2] * mRes * factoryMagCalibration[2];
+	_magBias[0] = (float)mag_b[0] * mRes * factoryMagCalibration[0];
+	_magBias[1] = (float)mag_b[1] * mRes * factoryMagCalibration[1];
+	_magBias[2] = (float)mag_b[2] * mRes * factoryMagCalibration[2];
   
     // Get soft iron correction estimate
     // Get average x axis max chord length in counts
-    mag_scale[0]  = (mag_max[0] - mag_min[0]) / 2;
+    mag_scale[0]  = (mag_max[0] - mag_min[0]) / 2.0f;
     // Get average y axis max chord length in counts
-    mag_scale[1]  = (mag_max[1] - mag_min[1]) / 2;
+    mag_scale[1]  = (mag_max[1] - mag_min[1]) / 2.0f;
     // Get average z axis max chord length in counts
-    mag_scale[2]  = (mag_max[2] - mag_min[2]) / 2;
+    mag_scale[2]  = (mag_max[2] - mag_min[2]) / 2.0f;
   
     float avg_rad = mag_scale[0] + mag_scale[1] + mag_scale[2];
-    avg_rad /= 3.0;
+    avg_rad /= 3.0f;
   
     scale_dest[0] = avg_rad / ((float)mag_scale[0]);
     scale_dest[1] = avg_rad / ((float)mag_scale[1]);
@@ -994,4 +994,9 @@ uint8_t MPU9250::ak8963WhoAmI_SPI()
   writeByteSPI(I2C_SLV0_CTRL, oldSlaveConfig);
 
   return response;
+}
+
+
+float * MPU9250::GetMagBias() {
+	return _magBias;
 }
