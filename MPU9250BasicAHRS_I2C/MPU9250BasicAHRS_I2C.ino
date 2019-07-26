@@ -175,7 +175,7 @@ void setup()
           // The next call delays for 4 seconds, and then records about 15 seconds of
           // data to calculate bias and scale.
           //myIMU.magCalMPU9250(myIMU._magBias, myIMU.magScale);
-		  myIMU.magCalMPU9250( myIMU.magScale );
+		  myIMU.magCalMPU9250();
 		  
 		  #ifdef MONITOR_MAGTER_AK8963_CALIBRATION
           delay(2000); // Add delay to see results before serial spew of data
@@ -239,10 +239,15 @@ void loop()
               // Get actual magnetometer value, this depends on scale being set
               myIMU.mx = ((float)myIMU.magCount[0] * myIMU.mRes
                          * myIMU.factoryMagCalibration[0]) - myIMU.GetMagBias()[0];
+			        myIMU.mx *= myIMU.GetMagScales()[0];
+
               myIMU.my = ((float)myIMU.magCount[1] * myIMU.mRes
                          * myIMU.factoryMagCalibration[1]) - myIMU.GetMagBias()[1];
+			        myIMU.my *= myIMU.GetMagScales()[1];
+
               myIMU.mz = ((float)myIMU.magCount[2] * myIMU.mRes
                          * myIMU.factoryMagCalibration[2]) - myIMU.GetMagBias()[2];
+			        myIMU.mz *= myIMU.GetMagScales()[2];
 
               // Must be called before updating quaternions!
               myIMU.updateTime();

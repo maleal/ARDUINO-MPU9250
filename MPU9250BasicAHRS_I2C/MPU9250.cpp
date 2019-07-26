@@ -618,7 +618,7 @@ void MPU9250::MPU9250SelfTest(float * destination)
 
 // Function which accumulates magnetometer data after device initialization.
 // It calculates the bias and scale in the x, y, and z axes.
-void MPU9250::magCalMPU9250( float * scale_dest)
+void MPU9250::magCalMPU9250( )
 {
     uint16_t ii = 0, sample_count = 0;
     float mag_b[3]  = {0, 0, 0},
@@ -698,9 +698,9 @@ void MPU9250::magCalMPU9250( float * scale_dest)
     float avg_rad = mag_scale[0] + mag_scale[1] + mag_scale[2];
     avg_rad /= 3.0f;
   
-    scale_dest[0] = avg_rad / ((float)mag_scale[0]);
-    scale_dest[1] = avg_rad / ((float)mag_scale[1]);
-    scale_dest[2] = avg_rad / ((float)mag_scale[2]);
+	_magScale[0] = avg_rad / ((float)mag_scale[0]);
+	_magScale[1] = avg_rad / ((float)mag_scale[1]);
+	_magScale[2] = avg_rad / ((float)mag_scale[2]);
 	
 	#ifdef MONITOR_MAGTER_AK8963_CALIBRATION
     Serial.println(F("Mag Calibration done!"));
@@ -999,4 +999,8 @@ uint8_t MPU9250::ak8963WhoAmI_SPI()
 
 float * MPU9250::GetMagBias() {
 	return _magBias;
+}
+
+float * MPU9250::GetMagScales() {
+	return _magScale;;
 }

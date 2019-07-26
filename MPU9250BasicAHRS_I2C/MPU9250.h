@@ -240,8 +240,10 @@ class MPU9250
 		uint8_t ak8963WhoAmI_SPI();
 	protected:
 		float _magBias[3] = { 0, 0, 0 };
+		float _magScale[3] = { 1, 1, 1, };
 	public:
 		float * GetMagBias();
+		float * GetMagScales();
 
   public:
     float pitch= 0.0f, yaw= 0.0f, roll= 0.0f;
@@ -285,7 +287,7 @@ class MPU9250
     void initMPU9250();
     void calibrateMPU9250(float * gyroBias, float * accelBias);
     void MPU9250SelfTest(float * destination);
-    void magCalMPU9250(float * dest2);
+    void magCalMPU9250();
     uint8_t writeByte(uint8_t, uint8_t, uint8_t);
     uint8_t readByte(uint8_t, uint8_t);
     uint8_t readBytes(uint8_t, uint8_t, uint8_t, uint8_t *);
