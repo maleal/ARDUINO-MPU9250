@@ -25,7 +25,7 @@
 
 #define STORAGE_VERSION	"VER01"
 
-typedef struct strCalStorage {
+typedef struct strCaltionStorage {
 	char version[5];
 	uint8_t gyroStorage[6];
 	uint8_t acelStorage[6];
@@ -33,18 +33,18 @@ typedef struct strCalStorage {
 };
 
 
-class CalStorage
+class EEStorage
 {
 	public:
-		bool GetStorage(char version[], strCalStorage* out);
+		bool GetStorage(char version[], strCaltionStorage* out);
 		bool PutStorage(char version[]);
 	public:
-		CalStorage();
-		~CalStorage();
+		EEStorage();
+		~EEStorage();
 
 	private:
 		int _eeAddress;
-		strCalStorage _Storage;
+		strCaltionStorage _Storage;
 		char _version[5 + 1];
 };
 

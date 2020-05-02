@@ -17,6 +17,7 @@
   SDA and SCL should have external pull-up resistors (to 3.3V).
   10k resistors are on the EMSENSR-9250 breakout board.
 
+
   Hardware setup:
   MPU9250 Breakout --------- Arduino
   VDD ---------------------- 3.3V
@@ -281,16 +282,17 @@ void loop()
               // http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
               // which has additional links.
               myIMU.yaw   = atan2(2.0f * (*(getQ() + 1) * *(getQ() + 2) + *getQ()
-                                          * *(getQ() + 3)), *getQ() * *getQ() + * (getQ() + 1)
+                                  * *(getQ() + 3)), *getQ() * *getQ() + * (getQ() + 1)
                                   * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) - * (getQ() + 3)
                                   * *(getQ() + 3));
-              myIMU.pitch = -asin(2.0f * (*(getQ() + 1) * *(getQ() + 3) - *getQ()
+              myIMU.pitch = asin(2.0f * (*(getQ() + 1) * *(getQ() + 3) - *getQ()
                                           * *(getQ() + 2)));
               myIMU.roll  = atan2(2.0f * (*getQ() * *(getQ() + 1) + * (getQ() + 2)
-                                          * *(getQ() + 3)), *getQ() * *getQ() - * (getQ() + 1)
+                                  * *(getQ() + 3)), *getQ() * *getQ() - * (getQ() + 1)
                                   * *(getQ() + 1) - * (getQ() + 2) * *(getQ() + 2) + * (getQ() + 3)
                                   * *(getQ() + 3));
-              myIMU.pitch *= RAD_TO_DEG;
+              
+			  myIMU.pitch *= RAD_TO_DEG;
               myIMU.yaw   *= RAD_TO_DEG;
         
               // Declination of Bs As 2017

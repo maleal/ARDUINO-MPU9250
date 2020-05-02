@@ -1,18 +1,18 @@
 #include <Arduino.h>
 #include "DataStorage.h"
 
-bool CalStorage::GetStorage(char version[], strCalStorage* out) {
+bool EEStorage::GetStorage(char version[], strCaltionStorage* out) {
 
 	int elenght = EEPROM.length();
   
-	if (elenght == sizeof(strCalStorage))
+	if (elenght == sizeof(strCaltionStorage))
 	{
 		EEPROM.get(_eeAddress, _Storage);
 		for (int i = 0; i < 5; i++) {
 			if (_Storage.version[i] != version[i])
 				return false;
 		}
-		memcpy(out, &_Storage, sizeof(strCalStorage));
+		memcpy(out, &_Storage, sizeof(strCaltionStorage));
 		return true;
 	}
 	else {
@@ -20,12 +20,12 @@ bool CalStorage::GetStorage(char version[], strCalStorage* out) {
 	}
 }
 
-bool CalStorage::PutStorage(char version[]) {
+bool EEStorage::PutStorage(char version[]) {
 
 	int elenght = EEPROM.length();
 	bool write = true;
 
-	if (elenght == sizeof(strCalStorage))
+	if (elenght == sizeof(strCaltionStorage))
 	{
 		EEPROM.get(_eeAddress, _Storage);
 		for (int i = 0; i < 5; i++) {
@@ -43,12 +43,12 @@ bool CalStorage::PutStorage(char version[]) {
 	}
 }
 
-CalStorage::CalStorage()
+EEStorage::EEStorage()
 {
-	memset(&_Storage, 0, sizeof(strCalStorage));
+	memset(&_Storage, 0, sizeof(strCaltionStorage));
 	_eeAddress = 0;
 }
 
-CalStorage::~CalStorage()
+EEStorage::~EEStorage()
 {
 }
