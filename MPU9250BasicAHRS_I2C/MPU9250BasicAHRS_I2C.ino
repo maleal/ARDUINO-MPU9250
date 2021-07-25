@@ -91,7 +91,7 @@ void setup()
           myIMU.MPU9250SelfTest();
 
           // Calibrate gyro and accelerometers, load biases in bias registers
-          myIMU.calibrateMPU9250(myIMU.gyroBias, myIMU.accelBias);
+          myIMU.calibrateMPU9250();
     
     
           // Accelerometer, Gyroscope and Temperature sensors: Initialize devices for active mode read
@@ -108,20 +108,8 @@ void setup()
           }
 
           // Magnetometer: first, We have to Get magnetometer calibration from AK8963 ROM (datos de fafrica)
-          myIMU.initAK8963(myIMU.factoryMagCalibration);
-          #ifdef MONITOR_SETTING_UP_MPU9250
-          {
-                  // Initialize device for active mode read of magnetometer
-                  Serial.println("AK8963 Magnetometer was initialized for active data mode....");
-                  Serial.println("Calibration values: ");
-                  Serial.print("X-Axis factory sensitivity adjustment value ");
-                  Serial.println(myIMU.factoryMagCalibration[0], 2);
-                  Serial.print("Y-Axis factory sensitivity adjustment value ");
-                  Serial.println(myIMU.factoryMagCalibration[1], 2);
-                  Serial.print("Z-Axis factory sensitivity adjustment value ");
-                  Serial.println(myIMU.factoryMagCalibration[2], 2);
-          }
-          #endif//MONITOR_SETTING_UP_MPU9250
+          myIMU.initAK8963(true);
+          
 
 
           // Get sensor resolutions, only need to do this once
@@ -201,15 +189,15 @@ void loop()
               // corrections
               // Get actual magnetometer value, this depends on scale being set
               myIMU.mx = ((float)myIMU.magCount[0] * myIMU.mRes
-                         * myIMU.factoryMagCalibration[0]) - myIMU.GetMagBias()[0];
+                         * myIMU.GetfactoryMagCalibration()[0]) - myIMU.GetMagBias()[0];
 			        myIMU.mx *= myIMU.GetMagScales()[0];
 
               myIMU.my = ((float)myIMU.magCount[1] * myIMU.mRes
-                         * myIMU.factoryMagCalibration[1]) - myIMU.GetMagBias()[1];
+                         * myIMU.GetfactoryMagCalibration()[1]) - myIMU.GetMagBias()[1];
 			        myIMU.my *= myIMU.GetMagScales()[1];
 
               myIMU.mz = ((float)myIMU.magCount[2] * myIMU.mRes
-                         * myIMU.factoryMagCalibration[2]) - myIMU.GetMagBias()[2];
+                         * myIMU.GetfactoryMagCalibration()[2]) - myIMU.GetMagBias()[2];
 			        myIMU.mz *= myIMU.GetMagScales()[2];
 
               // Must be called before updating quaternions!

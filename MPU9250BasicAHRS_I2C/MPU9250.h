@@ -187,6 +187,16 @@
 
 class MPU9250
 {
+	private:
+		float selfTest[6];
+
+		float 	gyroBias[3]  = {0, 0, 0},
+          		accelBias[3] = {0, 0, 0},
+          //_magBias[3]   = {0, 0, 0},
+          		magScale[3]  = {0, 0, 0};
+		// Factory mag calibration and mag bias
+    	float _factoryMagCalibration[3] = {0, 0, 0};
+
 	public:
 		// Set initial input parameters
 		enum Ascale
@@ -226,7 +236,8 @@ class MPU9250
 
 		// SPI chip select pin
 		int8_t _csPin;
-
+	public:
+		float * GetfactoryMagCalibration();
 		uint8_t writeByteWire(uint8_t, uint8_t, uint8_t);
 		uint8_t writeByteSPI(uint8_t, uint8_t);
 		uint8_t readByteSPI(uint8_t subAddress);
@@ -262,14 +273,9 @@ class MPU9250
     float aRes, gRes, mRes;
     // Variables to hold latest sensor data values
     float ax, ay, az, gx, gy, gz, mx, my, mz;
-    // Factory mag calibration and mag bias
-    float factoryMagCalibration[3] = {0, 0, 0}, factoryMagBias[3] = {0, 0, 0};
-    // Bias corrections for gyro, accelerometer, and magnetometer
-    float gyroBias[3]  = {0, 0, 0},
-          accelBias[3] = {0, 0, 0},
-          //_magBias[3]   = {0, 0, 0},
-          magScale[3]  = {0, 0, 0};
-    float selfTest[6];
+    
+    
+    
     // Stores the 16-bit signed accelerometer sensor output
     int16_t accelCount[3];
 
@@ -283,9 +289,9 @@ class MPU9250
     void readMagData(int16_t *);
     int16_t readTempData();
     void updateTime();
-    void initAK8963(float *);
+    void initAK8963(bool printFac);
     void initMPU9250();
-    void calibrateMPU9250(float * gyroBias, float * accelBias);
+    void calibrateMPU9250();
     void MPU9250SelfTest();
     void magCalMPU9250();
     uint8_t writeByte(uint8_t, uint8_t, uint8_t);
