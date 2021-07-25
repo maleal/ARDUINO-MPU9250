@@ -245,16 +245,16 @@ class MPU9250
 		float * GetMagBias();
 		float * GetMagScales();
 
-  public:
-    float pitch= 0.0f, yaw= 0.0f, roll= 0.0f;
-    float temperature;   // Stores the real internal chip temperature in Celsius
-    int16_t tempCount;   // Temperature raw count output
-    uint32_t dspDelt_t = 0; // Used to control display output rate
+  	public:
+		float pitch= 0.0f, yaw= 0.0f, roll= 0.0f;
+		float temperature;   // Stores the real internal chip temperature in Celsius
+		int16_t tempCount;   // Temperature raw count output
+		uint32_t dspDelt_t = 0; // Used to control display output rate
 
-    uint32_t count = 0, sumCount = 0; // used to control display output rate
-    float deltat = 0.0f, sum = 0.0f;  // integration interval for both filter schemes
-    uint32_t lastUpdate = 0, firstUpdate = 0; // used to calculate integration interval
-    uint32_t Now = 0;        // used to calculate integration interval
+		uint32_t count = 0, sumCount = 0; // used to control display output rate
+		float deltat = 0.0f, sum = 0.0f;  // integration interval for both filter schemes
+		uint32_t lastUpdate = 0, firstUpdate = 0; // used to calculate integration interval
+		uint32_t Now = 0;        // used to calculate integration interval
 
     int16_t gyroCount[3];   // Stores the 16-bit signed gyro sensor output
     int16_t magCount[3];    // Stores the 16-bit signed magnetometer sensor output
@@ -286,7 +286,7 @@ class MPU9250
     void initAK8963(float *);
     void initMPU9250();
     void calibrateMPU9250(float * gyroBias, float * accelBias);
-    void MPU9250SelfTest(float * destination);
+    void MPU9250SelfTest();
     void magCalMPU9250();
     uint8_t writeByte(uint8_t, uint8_t, uint8_t);
     uint8_t readByte(uint8_t, uint8_t);

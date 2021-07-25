@@ -27,6 +27,8 @@
   GND ---------------------- GND
 
   AHRS "attitude and heading reference system"
+  MPU-9250: Has an accelerometer with a programmable full-scale range of �2g, �4g, �8g and �16g and integrated 16-bit ADCs
+  and gyroscopes with a user-programmable full-scale range of �250, �500, �1,000 and �2,000�/sec and integrated 16-bit ADCs
 */
 
 // Set to false for basic data read
@@ -83,69 +85,29 @@ void setup()
       // Read the WHO_AM_I register, this is a good test of communication
       byte c = myIMU.readByte(MPU9250_ADDRESS, WHO_AM_I_MPU9250);
 
-      #ifdef MONITOR_SETTING_UP_MPU9250
-      {
-          Serial.print(F("MPU9250 I AM 0x"));
-          Serial.print(c, HEX);
-          Serial.print(F(" I should be 0x"));
-          Serial.println(0x71, HEX);
-      }
-      #endif //_MONITOR_SETTING_UP_MPU9250
-
-
       if (c == 0x71) // WHO_AM_I should always be 0x71
       {
       
-          #ifdef MONITOR_SELFTEST_GYRO_ACEL
-          // Start by performing self test and reporting values
-		  Serial.println("Began Self Test calling MPU9250SelfTest()");
-
-          myIMU.MPU9250SelfTest(myIMU.selfTest);
-          
-              Serial.println(F("MPU9250 is online..."));
-              Serial.print(F("x-axis self test: acceleration trim within : "));
-              Serial.print(myIMU.selfTest[0], 1); Serial.println("% of factory value");
-              Serial.print(F("y-axis self test: acceleration trim within : "));
-              Serial.print(myIMU.selfTest[1], 1); Serial.println("% of factory value");
-              Serial.print(F("z-axis self test: acceleration trim within : "));
-              Serial.print(myIMU.selfTest[2], 1); Serial.println("% of factory value");
-              Serial.print(F("x-axis self test: gyration trim within : "));
-              Serial.print(myIMU.selfTest[3], 1); Serial.println("% of factory value");
-              Serial.print(F("y-axis self test: gyration trim within : "));
-              Serial.print(myIMU.selfTest[4], 1); Serial.println("% of factory value");
-              Serial.print(F("z-axis self test: gyration trim within : "));
-              Serial.print(myIMU.selfTest[5], 1); Serial.println("% of factory value");
-          #endif //MONITOR_SELFTEST_GYRO_ACEL
+          myIMU.MPU9250SelfTest();
 
           // Calibrate gyro and accelerometers, load biases in bias registers
           myIMU.calibrateMPU9250(myIMU.gyroBias, myIMU.accelBias);
     
     
-          // Initialize device for active mode read of acclerometer, gyroscope, and
-          // temperature
+          // Accelerometer, Gyroscope and Temperature sensors: Initialize devices for active mode read
           myIMU.initMPU9250();
     
-          // Read the WHO_AM_I register of the magnetometer, this is a good test of
-          // communication
+          // Magnetometer: Read the WHO_AM_I register (communicatios test)
           byte d = myIMU.readByte(AK8963_ADDRESS, WHO_AM_I_AK8963);
-          
-		  #ifdef MONITOR_SETTING_UP_MPU9250
-              Serial.println("MPU9250 initialized for active data mode....");
-              Serial.print("AK8963 Mag");
-              Serial.print("I AM 0x");
-              Serial.print(d, HEX);
-              Serial.print(" I should be 0x");
-              Serial.println(0x48, HEX);
-          #endif//MONITOR_SETTING_UP_MPU9250
           if (d != 0x48)
           {
-              // Communication failed, stop here
+              Serial.println("MPU9250 initialized for active data mode....");
               Serial.println(F("Communication to magnetometer failed, abort!"));
               Serial.flush();
               abort();
           }
 
-          // First, We have to Get magnetometer calibration from AK8963 ROM (datos de fafrica)
+          // Magnetometer: first, We have to Get magnetometer calibration from AK8963 ROM (datos de fafrica)
           myIMU.initAK8963(myIMU.factoryMagCalibration);
           #ifdef MONITOR_SETTING_UP_MPU9250
           {
